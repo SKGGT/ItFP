@@ -9,7 +9,7 @@
 (format t "Head of the list: ~A~%" (first my-list))
 
 ;; 3. Get the tail of the list
-(format t "Tail of the list: ~A~%" (last my-list))
+(format t "Tail of the list: ~A~%" (cdr my-list))
 
 ;; 4. Get the third element of the list
 (format t "Third element of the list: ~A~%" (third my-list))
@@ -31,14 +31,15 @@
 ;; 8. Merge the created list with one of its nonempty sublists
 (format t "Merged list: ~A~%" (append my-list (fourth my-list)))
 
-(defparameter sub_list '())
-(defparameter lab_task_list '())
+(defparameter sub-list '())
+(defparameter lab-task-list '())
 
-(setq sub_list (list "A" '(2 1)))
-(setq lab_task_list (list sub_list "B" (second sub_list) "C"))
+(setq sub-list (list "A" 2 1))
+(setq lab-task-list (list sub-list "B" (cdr sub-list) "C"))
 
-(format t "Main list: ~A~%" lab_task_list)
-(format t "Sub list: ~A~%" sub_list)
+(format t "Main list: ~A~%" lab-task-list)
+(format t "Sub list: ~A~%" sub-list)
 
-(setf (first (second sub_list)) 99)
-(format t "Main list after changing sub list: ~A~%" lab_task_list)
+(setf (second sub-list) 99)
+;;(setf (third (first lab-task-list)) 121)
+(format t "Main list after changing sub list: ~A~%" lab-task-list)

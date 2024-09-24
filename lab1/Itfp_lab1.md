@@ -30,10 +30,10 @@ Head of the list: 1
 ```
 ### 3. Отримайте хвіст списку.
 ```lisp
-(format t "Tail of the list: ~A~%" (last my-list))
+(format t "Tail of the list: ~A~%" (cdr my-list))
 ```
 ```
-Tail of the list: (NIL)
+Tail of the list: (A (2 . 3) (4 5) NIL)
 ```
 ### 4. Отримайте третій елемент списку.
 ```lisp
@@ -90,17 +90,17 @@ Merged list: (1 A (2 . 3) (4 5) NIL 4 5)
 (defparameter sub_list '())
 (defparameter lab_task_list '())
 ;; Set them
-(setq sub_list (list "A" '(2 1)))
-(setq lab_task_list (list sub_list "B" (second sub_list) "C"))
+(setq sub_list (list "A" 2 1))
+(setq lab_task_list (list sub_list "B" (cdr sub_list) "C"))
 
 (format t "Main list: ~A~%" lab_task_list)
 (format t "Sub list: ~A~%" sub_list)
-;; Check if changes update
-(setf (first (second sub_list)) 99)
+
+(setf (second sub_list) 99)
 (format t "Main list after changing sub list: ~A~%" lab_task_list)
 ```
 ```
-Main list: ((A (2 1)) B (2 1) C)
-Sub list: (A (2 1))
-Main list after changing sub list: ((A (99 1)) B (99 1) C)
+Main list: ((A 2 1) B (2 1) C)
+Sub list: (A 2 1)
+Main list after changing sub list: ((A 99 1) B (99 1) C)
 ```
