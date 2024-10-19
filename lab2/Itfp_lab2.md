@@ -27,80 +27,74 @@
 Кожна реалізована функція має бути протестована для різних тестових наборів. Тести
 мають бути оформленні у вигляді модульних тестів (див. п. 2.3).
 
-## Варіан 2
+## Варіан 10
 
-Написати функцію remove-seconds-and-thirds , яка видаляє зі списку кожен другий
-і третій елементи:
+1. Написати функцію group-triples , яка групує послідовні трійки елементів у
+списки:
 ```lisp
-CL-USER> (remove-seconds-and-thirds '(a b c d e f g))
-(A D G)
+CL-USER> (group-triples '(a b c d e f g))
+((A B C) (D E F) (G))
 ```
-2. Написати функцію list-set-intersection , яка визначає перетин двох множин,
+2. Написати функцію list-set-intersection-3 , яка визначає перетин трьох множин,
 заданих списками атомів:
 ```lisp
-CL-USER> (list-set-intersection '(1 2 3 4) '(3 4 5 6))
+CL-USER> (list-set-intersection-3 '(1 2 3 4) '(3 4 5 6) '(1 3 4 6))
 (3 4) ; порядок може відрізнятись
 ```
 
-## Лістинг функції remove-seconds-and-thirds
+## Лістинг функції group-triples
 ```lisp
-(defun remove-seconds-and-thirds (lst)
+(defun group-triples (lst)
   (cond ((null lst) nil)
-        ((null (cdr lst)) lst)
-        ((null (cddr lst)) (list (car lst)))
-        (t (cons (car lst) 
-                 (remove-seconds-and-thirds (cdddr lst))))))
+        ((< (length lst) 3) (list lst))
+        (t (cons (list (first lst) (second lst) (third lst))
+                 (group-triples (nthcdr 3 lst))))))
 ```
 ### Тестові набори
 ```lisp
-(defun test-remove-seconds-and-thirds ()
-  (check-result-remove "test 1" #'remove-seconds-and-thirds '(a b c d e f g) '(a d g))
-  (check-result-remove "test 2" #'remove-seconds-and-thirds '(1 2 3 4 5) '(1 4))
-  (check-result-remove "test 3" #'remove-seconds-and-thirds '(a b) '(a))
-  (check-result-remove "test 4" #'remove-seconds-and-thirds '(a) '(a))
-  (check-result-remove "test 5" #'remove-seconds-and-thirds nil nil))
+(defun test-group-triples ()
+  (check-group "test 1" #'group-triples '(a b c d e f g) '((a b c) (d e f) (g)))
+  (check-group "test 2" #'group-triples '(1 2 3 4 5) '((1 2 3) (4 5)))
+  (check-group "test 3" #'group-triples '(a b) '((a b)))
+  (check-group "test 4" #'group-triples nil nil))
 ```
 ### Тестування
 ```lisp
-* (test-remove-seconds-and-thirds)
+* (test-group-triples)
 passed... test 1
 passed... test 2
 passed... test 3
 passed... test 4
-passed... test 5
 NIL
 ```
-## Лістинг функції list-set-intersection
+## Лістинг функції list-set-intersection-3
 ```lisp
-(defun member (item lst)
+(defun my-member (item lst)
   (cond ((null lst) nil)
         ((eql item (car lst)) t)
-        (t (member item (cdr lst)))))
+        (t (my-member item (cdr lst)))))
 
 
-(defun list-set-intersection (lst1 lst2)
-  (cond ((null lst1) nil)
-        ((member (car lst1) lst2)
-         (cons (car lst1) 
-               (list-set-intersection (cdr lst1) lst2)))
-        (t (list-set-intersection (cdr lst1) lst2))))
+(defun list-set-intersection-3 (lst1 lst2 lst3)
+  (cond ((or (null lst1) (null lst2) (null lst3)) nil)
+        ((and (my-member (car lst1) lst2) (my-member (car lst1) lst3))
+         (cons (car lst1) (list-set-intersection-3 (cdr lst1) lst2 lst3)))
+        (t (list-set-intersection-3 (cdr lst1) lst2 lst3))))
 ```
 ### Тестові набори
 ```lisp
-(defun test-list-set-intersection ()
-  (check-result-intersection "test 1" #'list-set-intersection '(1 2 3 4) '(3 4 5 6) '(3 4))
-  (check-result-intersection "test 2" #'list-set-intersection '(a b c) '(d e f) nil)
-  (check-result-intersection "test 3" #'list-set-intersection '(1 2 3) '(1 2 3) '(1 2 3))
-  (check-result-intersection "test 4" #'list-set-intersection nil '(1 2 3) nil)
-  (check-result-intersection "test 5" #'list-set-intersection '(1 2 3) nil nil))
+(defun test-list-set-intersection-3 ()
+  (check-intersection  "test 1" #'list-set-intersection-3 '(1 2 3 4) '(3 4 5 6) '(1 3 4 6) '(3 4))
+  (check-intersection  "test 2" #'list-set-intersection-3 '(1 2 3) '(2 3 4) '(3 4 5) '(3))
+  (check-intersection  "test 3" #'list-set-intersection-3 '(1 2 3) '(4 5 6) '(7 8 9) nil)
+  (check-intersection  "test 4" #'list-set-intersection-3 '(1 2 3) '(1 2 3) '(1 2 3) '(1 2 3)))
 ```
 ### Тестування
 ```lisp
-* (test-list-set-intersection)
+* (test-list-set-intersection-3)
 passed... test 1
 passed... test 2
 passed... test 3
 passed... test 4
-passed... test 5
 NIL
 ```
