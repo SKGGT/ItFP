@@ -46,7 +46,7 @@ CL-USER> (list-set-intersection-3 '(1 2 3 4) '(3 4 5 6) '(1 3 4 6))
 ```lisp
 (defun group-triples (lst)
   (cond ((null lst) nil)
-        ((< (length lst) 3) (list lst))
+        ((null (nthcdr 3 lst)) (list lst))
         (t (cons (list (first lst) (second lst) (third lst))
                  (group-triples (nthcdr 3 lst))))))
 ```
@@ -74,12 +74,15 @@ NIL
         ((eql item (car lst)) t)
         (t (my-member item (cdr lst)))))
 
+(defun aux-list-set (lst1 lst2 lst3)
+  (when lst1
+        (if (and (my-member (car lst1) lst2) (my-member (car lst1) lst3))
+            (cons (car lst1) (list-set-intersection-3 (cdr lst1) lst2 lst3))
+            (list-set-intersection-3 (cdr lst1) lst2 lst3))))
 
 (defun list-set-intersection-3 (lst1 lst2 lst3)
-  (cond ((or (null lst1) (null lst2) (null lst3)) nil)
-        ((and (my-member (car lst1) lst2) (my-member (car lst1) lst3))
-         (cons (car lst1) (list-set-intersection-3 (cdr lst1) lst2 lst3)))
-        (t (list-set-intersection-3 (cdr lst1) lst2 lst3))))
+  (when (and lst1 lst2 lst3)
+      (aux-list-set lst1 lst2 lst3)))
 ```
 ### Тестові набори
 ```lisp
