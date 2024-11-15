@@ -12,6 +12,13 @@
 
 
 (defun duplicate-elements-reducer (n &key (duplicate-p (constantly t)))
+  ; provides a lambda function for use in (reduce)
+  ; Arguments:
+  ; duplicate-p - expects a test function (oddp, evenp). Each element of the sequence that satisfies the test function will be duplicated.
+  ; (reduce) arguments:
+  ; start/end - can be supplied
+  ; initial-value - expected to be nil. It can be supplied a sequence but it won't be processed
+  ; from-end - if true the sequence can't be processed and it causes an error.
   (lambda (acc item)
     (if (funcall duplicate-p item)
         (nconc acc (make-list n :initial-element item))
