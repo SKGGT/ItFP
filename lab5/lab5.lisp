@@ -10,22 +10,24 @@
   (launch-year 0 :type integer)
   (mission-type "" :type string))
 
-(defun parse-value (value)
-  "Aux function for (read-csv-file). Converts the strings of data into their respective types."
-  (cond
-    ((string= value "") nil)
-    ((every #'digit-char-p value)
-     (parse-integer value))
-    (t value)))
+(defun parse-values (values record-type)
+  "Aux function for (read-csv-file). Converts the each row's values into their expected types."
+  (case record-type
+      (:company (list (parse-integer (first values)) (second values) (third values)))
+      (:spacecraft (list (parse-integer (first values))
+                        (second values)
+                        (parse-integer (third values))
+                        (parse-integer (fourth values))
+                        (fifth values)))))
 
 
-(defun read-csv-table (file-path)
+(defun read-csv-table (file-path record-type)
   "Reads a csv file. Returns a list of structured data of all rows of the file."
   (with-open-file (stream file-path :direction :input)
       (let* ((result '()))
         (do ((line (read-line stream) (read-line stream nil 'eof)))
               ((eq line 'eof) nil (reverse result))
-              (push (mapcar #'parse-value (uiop:split-string (string-right-trim '(#\Return) line) :separator '(#\,))) result)))))
+              (push (parse-values (uiop:split-string (string-right-trim '(#\Return) line) :separator '(#\,)) record-type) result)))))
 
 
 (defun key-to-index (key record-type)
@@ -51,7 +53,7 @@
 
 (defun select (file-path record-type)
   "Return a lambda function that selects elements from the csv file on call. Can be provided structure names and values to filter the selected data."
-  (let ((rows (read-csv-table file-path)))
+  (let ((rows (read-csv-table file-path record-type)))
     (lambda (&rest filter-args)
       (let ((filtered-rows
               (if (null filter-args)
@@ -139,9 +141,9 @@
                        (spacecraft-launch-year record)
                        (spacecraft-mission-type record)))))))
 
-(defun check-read (name file-path expected)
+(defun check-read (name file-path record-type expected)
   (format t "~:[FAILED~;passed~]... ~a~%"
-          (equal (read-csv-table file-path) expected)
+          (equal (read-csv-table file-path record-type) expected)
           name))
 
 (defun check-select (name input expected)
@@ -151,10 +153,11 @@
 
 (defun run-tests ()
   (format t "Tests:~%")
-  (check-read "test 1" "./FP_lab5/tests/test_read.csv" '((0 "NameTest1" 1 2024 "ComNameTest1")))
+  (check-read "test 1" "./FP_lab5/tests/test_read.csv" :spacecraft '((0 "NameTest1" 1 2024 "ComNameTest1")))
   (check-select "test 2" (funcall (select "./FP_lab5/tests/test_select_craft.csv" :spacecraft) :id 0) (list (make-spacecraft :id 0 :name "SaturnV" :company-id 0 :launch-year 1965 :mission-type "Moon")))
   (check-select "test 3" (funcall (select "./FP_lab5/tests/test_select_craft.csv" :spacecraft) :id 2) (list (make-spacecraft :id 2 :name "James" :company-id 0 :launch-year 2021 :mission-type "Research")))
   (check-select "test 4" (funcall (select "./FP_lab5/tests/test_select_craft.csv" :spacecraft) :mission-type "Research") (list (make-spacecraft :id 2 :name "James" :company-id 0 :launch-year 2021 :mission-type "Research") (make-spacecraft :id 3 :name "Hubble" :company-id 0 :launch-year 1990 :mission-type "Research")))
   (check-select "test 5" (funcall (select "./FP_lab5/tests/test_select_craft.csv" :spacecraft) :company-id 0 :mission-type "Research") (list (make-spacecraft :id 2 :name "James" :company-id 0 :launch-year 2021 :mission-type "Research") (make-spacecraft :id 3 :name "Hubble" :company-id 0 :launch-year 1990 :mission-type "Research")))
+  (format t "Full table:~%")
   (print-table (funcall (select "./FP_lab5/tests/test_select_craft.csv" :spacecraft))))
 
